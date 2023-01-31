@@ -33,13 +33,37 @@ const App = () => {
     setTasks(newTasks);
   };
 
+  const deleteTask = (id) => {
+    const newTasks = [];
+    console.log('Value of newTasks inside delete');
+    console.log(newTasks);
+    console.log('value of tasks in delete');
+    console.log(tasks);
+    for (let task of tasks) {
+      console.log(task);
+      if (task.id !== id) {
+        newTasks.push(task);
+      }
+    }
+    console.log(newTasks);
+    setTasks(newTasks);
+  };
+
   return (
     <div className="App">
       <header className="App-header">
         <h1>Ada&apos;s Task List</h1>
       </header>
       <main>
-        <div>{<TaskList tasks={tasks} onUpdateTasks={updateTasks} />}</div>
+        <div>
+          {
+            <TaskList
+              tasks={tasks}
+              onUpdateTasks={updateTasks}
+              onDeleteTask={deleteTask}
+            />
+          }
+        </div>
       </main>
     </div>
   );
