@@ -107,13 +107,12 @@ const App = () => {
       </header>
       <main>
         <div>
-          {
-            <TaskList
-              tasks={tasks}
-              onUpdateTasks={updateTask}
-              onDeleteTask={deleteTask}
-            />
-          }
+          <span>{errorMsg}</span>
+          <TaskList
+            tasks={tasks}
+            onUpdateTasks={updateTask}
+            onDeleteTask={deleteTask}
+          />
         </div>
       </main>
     </div>
