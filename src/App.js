@@ -1,51 +1,102 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import TaskList from './components/TaskList.js';
 import './App.css';
+import axios from 'axios';
 
-const TASKS = [
-  {
-    id: 1,
-    title: 'Mow the lawn',
-    isComplete: false,
-  },
-  {
-    id: 2,
-    title: 'Cook Pasta',
-    isComplete: true,
-  },
-  {
-    id: 3,
-    title: 'Rest',
-    isComplete: false,
-  },
-];
+const kBaseUrl = 'https://task-list-api-c17.herokuapp.com';
+
+const transformTaskFromJson = (task) => {
+  const { description, id, is_complete: isComplete, title } = task;
+  return { id, title, description, isComplete };
+};
+
+const getTasksFromAPI = () => {
+  return axios
+    .get(`${kBaseUrl}/tasks`)
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      console.log(error.response.status);
+      console.log(error.response.text);
+      return error;
+    });
+};
+
+const markCompleteAPI = (id) => {
+  return axios
+    .patch(`${kBaseUrl}/tasks/${id}/mark_complete`)
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      console.log(error.response.status);
+      console.log(error.response.text);
+      return error;
+    });
+};
+
+const markIncompleteAPI = (id) => {
+  return axios
+    .patch(`${kBaseUrl}/tasks/${id}/mark_incomplete`)
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      console.log(error.response.status);
+      console.log(error.response.text);
+      return error;
+    });
+};
 
 const App = () => {
-  const [tasks, setTasks] = useState(TASKS);
+  const [tasks, setTasks] = useState([]);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const updateTasks = (udpatedTask) => {
+  useEffect(() => {
+    getTasksFromAPI().then((apiTasks) => {
+      if (apiTasks instanceof Array) {
+        const transformedTasks = apiTasks.map((task) =>
+          transformTaskFromJson(task)
+        );
+        setTasks(transformedTasks);
+      } else {
+        setErrorMsg(
+          `ERROR ${apiTasks.response.status} ${apiTasks.response.text}`
+        );
+      }
+    });
+  }, []);
+
+  const updateTasks = (updatedTask) => {
     const newTasks = tasks.map((task) => {
-      if (task.id === udpatedTask.id) {
-        return udpatedTask;
+      if (task.id === updatedTask.id) {
+        return updatedTask;
       }
       return task;
     });
     setTasks(newTasks);
   };
 
+  const updateTask = (updatedTask) => {
+    if (updatedTask.isComplete) {
+      markCompleteAPI(updatedTask.id).then((updatedTaskAPI) => {
+        updateTasks(transformTaskFromJson(updatedTaskAPI.task));
+      });
+    } else {
+      markIncompleteAPI(updatedTask.id).then((updatedTaskAPI) => {
+        updateTasks(transformTaskFromJson(updatedTaskAPI.task));
+      });
+    }
+  };
+
   const deleteTask = (id) => {
     const newTasks = [];
-    console.log('Value of newTasks inside delete');
-    console.log(newTasks);
-    console.log('value of tasks in delete');
-    console.log(tasks);
     for (let task of tasks) {
-      console.log(task);
       if (task.id !== id) {
         newTasks.push(task);
       }
     }
-    console.log(newTasks);
     setTasks(newTasks);
   };
 
@@ -59,7 +110,7 @@ const App = () => {
           {
             <TaskList
               tasks={tasks}
-              onUpdateTasks={updateTasks}
+              onUpdateTasks={updateTask}
               onDeleteTask={deleteTask}
             />
           }
